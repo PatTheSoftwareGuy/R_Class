@@ -1,0 +1,97 @@
+{
+	"name": "R Data Science (rocker/tidyverse)",
+	"build": {
+		"dockerfile": "Dockerfile",
+		"context": ".."
+	},
+
+	// Run as the non-root user that ships with rocker images.
+	"remoteUser": "rstudio",
+	"containerUser": "rstudio",
+
+	// Forward the httpgd plot server so the R extension's Plot Viewer can render graphs.
+	"forwardPorts": [8787],
+	"portsAttributes": {
+		"8787": {
+			"label": "httpgd / RStudio Server",
+			"onAutoForward": "silent"
+		}
+	},
+
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				// Core R language support (LSP, terminal integration, plot/data/help viewers)
+				"reditorsupport.r",
+				// Step-through debugger for R (uses vscDebugger package installed in the image)
+				"rdebugger.r-debugger",
+				// Quarto authoring (.qmd) — modern successor to R Markdown
+				"quarto.quarto",
+				// R Markdown / Sweave snippets and syntax helpers
+				"tianyishi.rmarkdown",
+				// Jupyter support for IRkernel notebooks (.ipynb with R kernel)
+				"ms-toolsai.jupyter",
+				"ms-toolsai.jupyter-keymap",
+				"ms-toolsai.jupyter-renderers",
+				// CSV / TSV viewing — common data-science file formats
+				"mechatroner.rainbow-csv",
+				"grapecity.gc-excelviewer",
+				// General quality-of-life
+				"eamodio.gitlens",
+				"streetsidesoftware.code-spell-checker",
+				"editorconfig.editorconfig"
+			],
+			"settings": {
+				// --- R extension settings ---
+				"r.rterm.linux": "/usr/local/bin/radian",
+				"r.bracketedPaste": true,
+				"r.alwaysUseActiveTerminal": true,
+				"r.sessionWatcher": true,
+
+				// Plot output: route plots to the in-editor Plot Viewer via httpgd
+				"r.plot.useHttpgd": true,
+				"r.plot.defaults.colorTheme": "vscode",
+
+				// Linting / formatting via the R LanguageServer
+				"r.lsp.diagnostics": true,
+				"r.rmarkdown.enableCodeLens": true,
+				"r.rmarkdown.chunkBackgroundColor": "rgba(128, 128, 128, 0.1)",
+
+				// Editor defaults for R files
+				"[r]": {
+					"editor.tabSize": 2,
+					"editor.insertSpaces": true,
+					"editor.formatOnSave": true,
+					"editor.wordWrap": "on"
+				},
+				"[rmd]": {
+					"editor.tabSize": 2,
+					"editor.insertSpaces": true,
+					"editor.wordWrap": "on"
+				},
+				"[quarto]": {
+					"editor.tabSize": 2,
+					"editor.insertSpaces": true,
+					"editor.wordWrap": "on"
+				},
+
+				"terminal.integrated.defaultProfile.linux": "bash",
+				"files.associations": {
+					"*.R": "r",
+					"*.Rmd": "rmd",
+					"*.qmd": "quarto",
+					"*.Rprofile": "r",
+					"*.Renviron": "properties"
+				}
+			}
+		}
+	},
+
+	// Project-local R user library, plus persistent renv cache between rebuilds.
+	"mounts": [
+		"source=r-class-renv-cache,target=/home/rstudio/.cache/R/renv,type=volume"
+	],
+
+	// Sanity check that the toolchain came up correctly.
+	"postCreateCommand": "R --version && radian --version && Rscript -e 'pkgs <- c(\"languageserver\",\"vscDebugger\",\"tidyverse\",\"httpgd\"); status <- vapply(pkgs, requireNamespace, logical(1), quietly = TRUE); cat(\"R package status: \", paste(sprintf(\"%s=%s\", names(status), ifelse(status, \"yes\", \"no\")), collapse=\", \"), \"\\n\")'"
+}
