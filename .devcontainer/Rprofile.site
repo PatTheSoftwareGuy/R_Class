@@ -1,0 +1,49 @@
+# ~/.Rprofile — loaded for every interactive R session in the dev container.
+# Purpose: make the VS Code R extension's plot viewer, help viewer, and session
+# watcher work out of the box, without the user having to configure anything.
+
+# Only run this block in interactive sessions (not Rscript, not R CMD check).
+if (interactive()) {
+
+  # --- 1. Session watcher --------------------------------------------------
+  # The vscode-R extension watches a workspace file for environment / plot
+  # updates. Sourcing its init script wires up that watcher.
+  if ("httpgd" %in% .packages(all.available = TRUE)) {
+    # Open httpgd as the default graphics device so plots stream to the
+    # VS Code Plot Viewer instead of opening an X11 window.
+    options(vsc.plot = FALSE)              # disable PNG snapshotting (we use httpgd live)
+    options(vsc.use_httpgd = TRUE)
+    options(httpgd.port = 0L)              # let httpgd pick a free port
+    options(httpgd.token = FALSE)
+  }
+
+  # Pretty-print data.frames / tibbles in the View() pane
+  options(vsc.view = "Two")
+
+  # Help pages render in the VS Code side panel instead of a browser tab
+  options(vsc.helpPanel = "Beside")
+
+  # Hook the vscode-R init script if the package is available.
+  if (nzchar(Sys.getenv("R_LIBS_USER")) &&
+      "languageserver" %in% .packages(all.available = TRUE)) {
+    # languageserver provides LSP features (completion, hover, go-to-def, lint).
+    # No explicit call needed — VS Code launches it.
+  }
+
+  # --- 2. CRAN mirror ------------------------------------------------------
+  options(repos = c(CRAN = "https://cloud.r-project.org"))
+
+  # --- 3. Friendlier console defaults --------------------------------------
+  options(
+    max.print     = 1000,
+    scipen        = 10,         # prefer 0.000123 over 1.23e-04 in console output
+    digits        = 5,
+    stringsAsFactors = FALSE,
+    warn          = 1,          # print warnings as they occur
+    width         = 120
+  )
+
+  # --- 4. Welcome banner ---------------------------------------------------
+  message("R dev container ready. Type `library(tidyverse)` to begin.")
+  message("Plots open in the VS Code Plot Viewer (httpgd). Use plot(), ggplot(), etc.")
+}
