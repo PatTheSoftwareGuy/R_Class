@@ -1,5 +1,10 @@
 
 {
   "r.lsp.diagnostics": false,
-  "problems.showCurrentInStatus": false
+  "problems.showCurrentInStatus": false,
+  "editor.formatOnSave": true,
+  "notebook.formatOnSave.enabled": true,
+  "[r]": {
+    "editor.defaultFormatter": "REditorSupport.r"
+  }
 }
