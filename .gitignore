@@ -56,3 +56,5 @@ po/*~
 rsconnect/
 *.zip
 *.csv
+*.csv.gz
+
