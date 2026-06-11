@@ -39,7 +39,8 @@
 				// General quality-of-life
 				"eamodio.gitlens",
 				"streetsidesoftware.code-spell-checker",
-				"editorconfig.editorconfig"
+				"editorconfig.editorconfig",
+				"ms-python.python"
 			],
 			"settings": {
 				// --- R extension settings ---
@@ -92,6 +93,6 @@
 		"source=r-class-renv-cache,target=/home/rstudio/.cache/R/renv,type=volume"
 	],
 
-	// Sanity check that the toolchain came up correctly.
-	"postCreateCommand": "R --version && radian --version && Rscript -e 'pkgs <- c(\"languageserver\",\"vscDebugger\",\"tidyverse\",\"httpgd\"); status <- vapply(pkgs, requireNamespace, logical(1), quietly = TRUE); cat(\"R package status: \", paste(sprintf(\"%s=%s\", names(status), ifelse(status, \"yes\", \"no\")), collapse=\", \"), \"\\n\")'"
+	// Install Jupyter + IRkernel after the workspace is mounted, then run the existing toolchain sanity check.
+	"postCreateCommand": "bash ./scripts/setup_r_jupyter.sh && R --version && radian --version && Rscript -e 'pkgs <- c(\"languageserver\",\"vscDebugger\",\"tidyverse\",\"httpgd\"); status <- vapply(pkgs, requireNamespace, logical(1), quietly = TRUE); cat(\"R package status: \", paste(sprintf(\"%s=%s\", names(status), ifelse(status, \"yes\", \"no\")), collapse=\", \"), \"\\n\")' && xelatex --version | head -n 1 && pandoc --version | head -n 1"
 }

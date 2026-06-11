@@ -47,6 +47,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libjpeg-dev \
         libzmq3-dev \
         pkg-config \
+        pandoc \
+        fonts-dejavu-core \
+        texlive-xetex \
+        texlive-latex-extra \
+        texlive-fonts-recommended \
+        texlive-plain-generic \
     && rm -rf /var/lib/apt/lists/*
 
 # Give the default rstudio user passwordless sudo for dev container convenience

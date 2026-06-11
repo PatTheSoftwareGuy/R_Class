@@ -1,3 +1,10 @@
+.env
+.venv*
+.venv-jupyter
+.venv-pytest
+
+.csv
+
 # History files
 .Rhistory
 .Rapp.history

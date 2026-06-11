@@ -1,0 +1,26 @@
+#### Load necessary libraries ####
+library(tidyverse)
+library(readr) 
+library(dplyr) 
+library(ggplot2) 
+library(janitor) 
+library(skimr) 
+library(caret) 
+library(rpart.plot) 
+library(pROC) 
+library(broom)
+ 
+#### Load the dataset ####
+folder = "../data"
+df.hr <- read_csv(file.path(folder,"WA_Fn-UseC_-HR-Employee-Attrition.csv"))
+ 
+glimpse(df.hr)
+dim(df.hr)
+names(df.hr)
+ 
+ 
+### Check for missing values ###
+colSums(is.na(df.hr))
+ 
+table(df.hr$Attrition)
+prop.table(table(df.hr$Attrition)) * 100
