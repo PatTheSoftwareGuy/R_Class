@@ -58,3 +58,6 @@ rsconnect/
 *.csv
 *.csv.gz
 
+*.rds
+
+
