@@ -201,10 +201,10 @@ overSample_df <- function(df, train_p = 0.70) {
   # Same prep logic as your oversampling script
   baf_model <- df %>%
     mutate(
+      fraud_bool = as.integer(fraud_bool),
       fraud_status = ifelse(fraud_bool == 1, "Fraud", "Not_Fraud"),
-      fraud_status = factor(fraud_status, levels = c("Fraud", "Not_Fraud"))
+      fraud_status = factor(fraud_status, levels = c("Not_Fraud", "Fraud"))
     ) %>%
-    select(-fraud_bool) %>%
     mutate(across(where(is.character), as.factor))
 
   # Same split logic
@@ -217,18 +217,19 @@ overSample_df <- function(df, train_p = 0.70) {
   train_data <- baf_model[train_index, , drop = FALSE]
 
   # Same oversampling logic
-  train_data_over <- upSample(
-    x = train_data %>% select(-fraud_status),
-    y = train_data$fraud_status,
-    yname = "fraud_status"
-  )
+  train_data_over <- caret::upSample(
+    x = dplyr::select(train_data, -fraud_bool, -fraud_status), # predictors only
+    y = factor(train_data$fraud_bool, levels = c(0, 1)),
+    yname = "fraud_bool"
+  ) %>%
+    dplyr::mutate(
+      fraud_bool = as.integer(as.character(fraud_bool)),
+      fraud_status = factor(ifelse(fraud_bool == 1, "Fraud", "Not_Fraud"), levels = c("Not_Fraud", "Fraud"))
+    ) %>%
+    dplyr::relocate(fraud_bool, .before = 1)
 
-  # Optional consistent level order used in your other script
-  train_data_over$fraud_status <- factor(
-    train_data_over$fraud_status,
-    levels = c("Not_Fraud", "Fraud")
-  )
-
+  # Safety check
+  stopifnot("fraud_bool" %in% names(train_data_over))
   return(train_data_over)
 }
 
@@ -254,11 +255,19 @@ for (file in dataFiles) {
   checkFraudData(df_file)
   df_file <- dataQualityCheck(df_file)
   processed_df <- precessData(df_file)
-  head(processed_df)
+  print(paste("Column names:", paste(colnames(processed_df), collapse = ", ")))
   saveAsRDS(processed_df, filePath = paste0(out_dir, "/", basename(file), "_PCD.rds"))
   overSampled_df <- overSample_df(processed_df)
-  saveAsRDS(overSampled_df, filePath = paste0(out_dir, "/", basename(file), "_PCD_OS.rds"))
+  stopifnot("fraud_bool" %in% names(overSampled_df))
+  over_path <- paste0(out_dir, "/", basename(file), "_PCD_OS.rds")
+  saveAsRDS(overSampled_df, filePath = over_path)
+  reloaded_over <- readRDS(over_path)
+  stopifnot("fraud_bool" %in% names(reloaded_over))
+  cat("fraud_bool present after save/reload:", "fraud_bool" %in% names(reloaded_over), "\n")
+  print(paste("Column names:", paste(colnames(overSampled_df), collapse = ", ")))
   print(sprintf("--------------- FILE %s DONE ---------------", file))
+
+  # break
 }
 
 
